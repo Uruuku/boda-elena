@@ -40,8 +40,8 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
   try {
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabaseUrl = process.env.NEXT_SUPABASE_URL!;
+    const supabaseKey = process.env.NEXT_SUPABASE_ANON_KEY!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { url, password } = await request.json();
