@@ -45,14 +45,25 @@ export async function DELETE(request: Request) {
     const supabase = createClient(supabaseUrl, supabaseKey);
 
     const { url, password } = await request.json();
+    
+    // Comprobamos la contraseña
     if (password !== process.env.ADMIN_PASSWORD) {
-      return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
+      return NextResponse.json({ error: 'Contraseña incorrecta' }, { status: 401 });
     }
     
-    const fileName = url.substring(url.lastIndexOf('/') + 1);
-    await supabase.storage.from('fotos').remove([fileName]);
+    // Extraemos el nombre del archivo y limpiamos los caracteres raros (como %20 de los espacios)
+    const fileName = decodeURIComponent(url.substring(url.lastIndexOf('/') + 1));
+    
+    const { error } = await supabase.storage.from('fotos').remove([fileName]);
+    
+    if (error) {
+      console.error("Error al borrar en Supabase:", error.message);
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json({ error: 'Error al borrar' }, { status: 500 });
+    console.error("Error fatal en el borrado:", error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
