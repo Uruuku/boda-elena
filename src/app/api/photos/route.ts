@@ -13,13 +13,19 @@ export async function GET() {
 
     const photos = data
       .filter(file => file.name !== '.emptyFolderPlaceholder')
-      .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+      .sort((a, b) => {
+        // Red de seguridad: si no hay fecha, usamos 0 para que TypeScript no se queje
+        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
+        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        return timeB - timeA;
+      })
       .map(file => {
         const { data: publicData } = supabase.storage.from('fotos').getPublicUrl(file.name);
         return {
           url: publicData.publicUrl,
           pathname: file.name,
-          uploadedAt: file.created_at,
+          // Otra red de seguridad por si created_at viene nulo
+          uploadedAt: file.created_at || new Date().toISOString(),
         };
       });
 
