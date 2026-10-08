@@ -14,14 +14,9 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-type Props = {
-  params: Promise<{ lang: string }>;
-};
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  const lang = resolvedParams.lang as 'es' | 'en' | 'sq';
-  const dict = await getDictionary(lang);
+export async function generateMetadata(): Promise<Metadata> {
+  // Cargamos directamente el diccionario en español
+  const dict = await getDictionary('es');
   const TITULO = `${BODA.nombres} · ${dict.config.fechaTexto}`;
   const NOMBRE_APP = `Boda ${BODA.nombres}`;
 
@@ -32,38 +27,27 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     applicationName: NOMBRE_APP,
     openGraph: {
       type: "website",
-      locale: lang === 'en' ? 'en_US' : lang === 'sq' ? 'sq_AL' : 'es_ES',
+      locale: 'es_ES',
       url: BODA.url,
       siteName: NOMBRE_APP,
       title: TITULO,
       description: dict.config.descripcion,
     },
-    twitter: {
-      card: "summary_large_image",
-      title: TITULO,
-      description: dict.config.descripcion,
-    },
-    robots: { index: false, follow: false },
   };
 }
 
 export const viewport: Viewport = {
-  themeColor: "#7C9885",
+  themeColor: "#436445",
 };
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
-  params,
 }: Readonly<{
   children: React.ReactNode;
-  params: Promise<{ lang: string }>;
 }>) {
-  const resolvedParams = await params;
-  const lang = resolvedParams.lang as 'es' | 'en' | 'sq';
-  
   return (
     <html
-      lang={lang}
+      lang="es"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>

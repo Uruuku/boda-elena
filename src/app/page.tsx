@@ -4,18 +4,13 @@ import Gallery from '@/components/Gallery';
 import Image from 'next/image';
 import { BODA } from '@/config/boda';
 import { getDictionary } from '@/dictionaries/getDictionary';
-import LanguageSwitcher from '@/components/LanguageSwitcher'; 
 
-export default async function Home({ params }: { params: Promise<{ lang: string }> }) {
-  const resolvedParams = await params;
-  const lang = resolvedParams.lang as 'es' | 'en' | 'sq';
-  const dict = await getDictionary(lang);
+export default async function Home() {
+  // Cargamos directamente el diccionario en español
+  const dict = await getDictionary('es');
 
   return (
     <main className="min-h-screen bg-wedding-bg text-wedding-text relative pb-32">
-      
-      <LanguageSwitcher lang={lang} />
-
       <section className="flex flex-col items-center justify-center pt-16 px-6 text-center">
         <div className="relative w-40 h-40 md:w-48 md:h-48 mb-8">
           <div className="absolute inset-0 rounded-full border-4 border-wedding-gold/20 scale-110"></div>
