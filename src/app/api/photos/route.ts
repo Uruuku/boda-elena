@@ -14,9 +14,9 @@ export async function GET() {
     const photos = data
       .filter(file => file.name !== '.emptyFolderPlaceholder')
       .sort((a, b) => {
-        // Red de seguridad: si no hay fecha, usamos 0 para que TypeScript no se queje
-        const timeA = a.created_at ? new Date(a.created_at).getTime() : 0;
-        const timeB = b.created_at ? new Date(b.created_at).getTime() : 0;
+        // Obligamos a TypeScript a tratar las fechas como textos válidos (as string)
+        const timeA = new Date(a.created_at as string).getTime() || 0;
+        const timeB = new Date(b.created_at as string).getTime() || 0;
         return timeB - timeA;
       })
       .map(file => {
@@ -24,8 +24,7 @@ export async function GET() {
         return {
           url: publicData.publicUrl,
           pathname: file.name,
-          // Otra red de seguridad por si created_at viene nulo
-          uploadedAt: file.created_at || new Date().toISOString(),
+          uploadedAt: file.created_at as string,
         };
       });
 
