@@ -8,8 +8,8 @@ export const maxDuration = 60;
 export async function POST(request: Request) {
   try {
     // 1. Inicializamos Supabase DENTRO de la función para usar las variables reales
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const supabaseUrl = process.env.NEXT_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_SUPABASE_ANON_KEY;
 
     if (!supabaseUrl || !supabaseKey) {
       throw new Error("Faltan las variables de entorno reales en Vercel");
