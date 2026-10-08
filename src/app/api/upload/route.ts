@@ -3,13 +3,12 @@ import { createClient } from '@supabase/supabase-js';
 import nodemailer from 'nodemailer';
 import { BODA } from '@/config/boda';
 
-// Permite que la función tarde hasta 60 segundos (útil si suben varias fotos pesadas a la vez)
 export const maxDuration = 60;
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Valores temporales para evitar que el "build" de Vercel colapse
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://temporal.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'clave-temporal';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +19,6 @@ export async function POST(request: Request) {
 
     const uploadedUrls = [];
 
-    // 1. Subir las fotos a Supabase
     for (const file of files) {
       const safeName = guestName.replace(/[^a-zA-Z0-9]/g, '_');
       const safeMsg = message.replace(/[^a-zA-Z0-9]/g, '_');
@@ -31,13 +29,11 @@ export async function POST(request: Request) {
         .upload(fileName, file, { cacheControl: '3600' });
 
       if (!error && data) {
-        // Obtenemos la URL pública para ponerla en el correo
         const { data: publicData } = supabase.storage.from('fotos').getPublicUrl(fileName);
         uploadedUrls.push(publicData.publicUrl);
       }
     }
 
-    // 2. Enviar el correo de notificación
     if (uploadedUrls.length > 0 && process.env.EMAIL_USER && process.env.EMAIL_PASS) {
       const transporter = nodemailer.createTransport({
         service: 'gmail',
@@ -49,7 +45,7 @@ export async function POST(request: Request) {
 
       const mailOptions = {
         from: process.env.EMAIL_USER,
-        to: process.env.EMAIL_USER, // Te lo envías a ti mismo o al correo de los novios
+        to: process.env.EMAIL_USER,
         subject: `📸 Nuevas fotos de ${guestName} - Boda ${BODA.nombres}`,
         html: `
           <h2 style="color: #436445;">¡${guestName} acaba de subir ${uploadedUrls.length} foto(s)!</h2>

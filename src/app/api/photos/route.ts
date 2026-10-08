@@ -1,10 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Valores temporales para evitar que el "build" de Vercel colapse
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://temporal.supabase.co';
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'clave-temporal';
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export async function GET() {
   try {
@@ -14,7 +14,6 @@ export async function GET() {
     const photos = data
       .filter(file => file.name !== '.emptyFolderPlaceholder')
       .sort((a, b) => {
-        // Obligamos a TypeScript a tratar las fechas como textos válidos (as string)
         const timeA = new Date(a.created_at as string).getTime() || 0;
         const timeB = new Date(b.created_at as string).getTime() || 0;
         return timeB - timeA;
