@@ -1,14 +1,19 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 
-// Valores temporales para evitar que el "build" de Vercel colapse
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://temporal.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'clave-temporal';
-const supabase = createClient(supabaseUrl, supabaseKey);
+// Evita que Vercel congele esta página y muestre siempre 0 fotos
+export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) return NextResponse.json([]);
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
     const { data, error } = await supabase.storage.from('fotos').list();
+    
     if (error || !data) return NextResponse.json([]);
 
     const photos = data
@@ -35,6 +40,10 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
   try {
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     const { url, password } = await request.json();
     if (password !== process.env.ADMIN_PASSWORD) {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });

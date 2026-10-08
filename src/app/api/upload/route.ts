@@ -5,13 +5,18 @@ import { BODA } from '@/config/boda';
 
 export const maxDuration = 60;
 
-// Valores temporales para evitar que el "build" de Vercel colapse
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://temporal.supabase.co';
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'clave-temporal';
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export async function POST(request: Request) {
   try {
+    // 1. Inicializamos Supabase DENTRO de la función para usar las variables reales
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Faltan las variables de entorno reales en Vercel");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
     const formData = await request.formData();
     const files = formData.getAll('files') as File[];
     const guestName = (formData.get('guestName') as string) || 'Invitado';
@@ -28,7 +33,13 @@ export async function POST(request: Request) {
         .from('fotos')
         .upload(fileName, file, { cacheControl: '3600' });
 
-      if (!error && data) {
+      // Si falla, AHORA SÍ lanzamos un error para que la web te avise y Vercel lo registre
+      if (error) {
+        console.error("Error de Supabase:", error.message);
+        return NextResponse.json({ error: error.message }, { status: 500 });
+      }
+
+      if (data) {
         const { data: publicData } = supabase.storage.from('fotos').getPublicUrl(fileName);
         uploadedUrls.push(publicData.publicUrl);
       }
@@ -62,7 +73,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ success: true, uploaded: uploadedUrls.length });
   } catch (error) {
-    console.error("Error completo en la subida:", error);
-    return NextResponse.json({ error: 'Error al procesar la solicitud' }, { status: 500 });
+    console.error("Error catastrófico en la subida:", error);
+    return NextResponse.json({ error: 'Error interno del servidor' }, { status: 500 });
   }
 }
