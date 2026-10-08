@@ -11,7 +11,6 @@ export async function GET() {
     const { data, error } = await supabase.storage.from('fotos').list();
     if (error || !data) return NextResponse.json([]);
 
-    // Formateamos los datos exactamente igual que Vercel Blob para que tu Galería no note la diferencia
     const photos = data
       .filter(file => file.name !== '.emptyFolderPlaceholder')
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
